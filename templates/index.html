@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>USCIS Case Monitoring</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Loading Bootstrap -->
+    <link href="static/css/vendor/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Loading Flat UI -->
+    <link href="static/css/flat-ui.css" rel="stylesheet">
+
+{#    <link rel="shortcut icon" href="static/img/favicon.ico">#}
+    <!-- Loading app custom style -->
+    <link href="static/css/app.css" rel="stylesheet">
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
+    <!--[if lt IE 9]>
+      <script src="static/js/vendor/html5shiv.js"></script>
+      <script src="static/js/vendor/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container">
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <span class="navbar-brand">USCIS Case Monitoring</span>
+            </div>
+            <div class="collapse navbar-collapse navbar-right">
+                <ul class="nav navbar-nav">
+                    <li><span class="navbar-text">Hi, {{ user }}</span></li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </div>
+
+    <div class="page-header">
+        <h4>My Case</h4>
+        <button id="btn_add" class="btn btn-primary pull-right margin-top--40">Add case</button>
+    </div>
+    <div>
+        <div>
+            <div class="todo mrm">
+                <div class="todo-search">
+                    <strong>Case List</strong>
+                    <div id="spin"></div>
+                </div>
+                <ul id="ul_cases">
+                </ul>
+
+                <div class="text-right" style="padding:20px;">
+                    <div class="addthis_sharing_toolbox"></div>
+                </div>
+                {% if settings.GOOGLE_AD %}
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- case-monitoring -->
+                <ins class="adsbygoogle"
+                     style="display:inline-block;width:728px;height:90px"
+                     data-ad-client="{{ settings.GOOGLE_AD.CLIENT }}"
+                     data-ad-slot="{{ settings.GOOGLE_AD.SLOT }}"></ins>
+                <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+                {% endif %}
+            <span class="help-block">
+                    <span class="fui-alert-circle"></span>
+                    Data source: USCIS website: https://egov.uscis.gov.<br>
+                    Data refresh interval: every 6 hours.<br>
+                    Cases with status "Decision", "Post Decision Activity", "Oath Ceremony", "Card/ Document Production" will no longer be updated.
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.container -->
+
+<div id="div_modal" class="modal fade">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">OK</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div id="div_modal_sm" class="modal fade">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title"></h4>
+            </div>
+            <div class="modal-body">
+                <p>Press 'Delete' to delete , or Press 'Cancel' to close this dialog without delete!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<!-- jQuery (necessary for Flat UI's JavaScript plugins) -->
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="static/js/vendor/spin.min.js"></script>
+<script>
+    var opts = {
+        lines: 13, // The number of lines to draw
+        length: 0, // The length of each line
+        width: 6, // The line thickness
+        radius: 13, // The radius of the inner circle
+        corners: 1, // Corner roundness (0..1)
+        rotate: 90, // The rotation offset
+        direction: 1, // 1: clockwise, -1: counterclockwise
+        color: '#000', // #rgb or #rrggbb or array of colors
+        speed: 1, // Rounds per second
+        trail: 38, // Afterglow percentage
+        shadow: true, // Whether to render a shadow
+        hwaccel: false, // Whether to use hardware acceleration
+        className: 'spinner', // The CSS class to assign to the spinner
+        zIndex: 2e9, // The z-index (defaults to 2000000000)
+        top: '34px', // Top position relative to parent
+        left: '90%' // Left position relative to parent
+    };
+    var target = document.getElementById('spin');
+    var spinner = new Spinner(opts).spin(target);
+</script>
+<script data-main="static/js/app" src="static/js/vendor/requireJS.min.js"></script>
+<script type="text/template" id="listTpl">
+    <%#loop%>
+    <li>
+        <div class="todo-content">
+            <div class="row">
+                <div class="col-md-8">
+                    <h4 class="todo-name">
+                        <strong><%&number%></strong>
+                    </h4>
+                    <span class="label label-info small"><%&status%></span> <%&date%>
+                </div>
+                <div class="col-md-4">
+                    <div class="pull-right">
+                        <button caseid="<%&number%>" class="btndetail btn btn-info btn-xs">Detail</button>
+                        <button caseid="<%&number%>" class="btndelete margin-left-8 btn btn-danger btn-xs">Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </li>
+    <%/loop%>
+    <%^loop%>
+    <li>
+        <div class="todo-content">
+            <div class="row">
+                <div class="col-md-8">
+                    <p>No record found.</p>
+                </div>
+            </div>
+        </div>
+    </li>
+    <%/loop%>
+</script>
+<script type="text/template" id="detailTpl">
+    <div class="well row">
+        <div class="col-md-5">Number: <span class="info"><%&number%></span></div>
+        <div class="col-md-5">Current Status: <span class="info"><%&currentstatus%></span></div>
+        </br>
+        <div class="col-md-10"><span class="text-muted small">Last Check: <%&lastcheck%></span></div>
+    </div>
+    <ul class="timeline">
+        <%#status%>
+        <%#invert%>
+        <li class="timeline-inverted">
+            <%/invert%>
+            <%^invert%>
+        <li>
+            <%/invert%>
+            <div class="timeline-badge info"><i class="fui-location"></i></div>
+            <div class="timeline-panel">
+                <div class="timeline-heading">
+                    <p><strong class="timeline-title"><%&status%></strong></p>
+                    <p>
+                        <span class=""><i class=""></i><%&date%></span>
+                    </p>
+                    <%#daystolaststatus%>
+                    <p><span class="small label label-info"><%&daystolaststatus%></span> days away from previous status</p>
+                    <%/daystolaststatus%>
+
+                </div>
+            </div>
+        </li>
+        <%/status%>
+    </ul>
+</script>
+
+<script type="text/template" id="addTpl">
+    <form role="form-horizontal">
+        <div class="form-group">
+            <label for="id_number">Number:</label>
+            <input type="text" class="form-control" id="id_number" placeholder="Enter case number">
+        </div>
+        <div class="form-group">
+            <div class="alert alert-warning alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <span class="help-block"><span class="fui-alert-circle"></span>Please enter the corresponding application receipt number. The 13-character
+                application receipt number can be found on application notices you have received from the USCIS. It
+                begins with three letters such as (EAC, WAC, LIN, or SRC). Dashes ("-") should be omitted when entering
+                a receipt number. However, all other characters, including asterisks ("*"), can be included if listed on
+                your notice as part of the receipt number.</span>
+            </div>
+        </div>
+    </form>
+</script>
+
+{% if settings.ADDTHIS_REF %}
+<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid={{ settings.ADDTHIS_REF }}" async="async"></script>
+{% endif %}
+
+{% if settings.GOOGLE_ANALYTICS %}
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', '{{ settings.GOOGLE_ANALYTICS }}', 'auto');
+  ga('send', 'pageview');
+</script>
+{% endif %}
+
+</body>
+</html>

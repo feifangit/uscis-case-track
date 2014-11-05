@@ -1,0 +1,38 @@
+application: case-monitoring
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /favicon\.ico
+  static_files: static/img/favicon.ico
+  upload: static/img/favicon\.ico
+
+- url: /static
+  static_dir: static
+
+- url: /task/pullstatus/
+  script: main.app
+  login: admin
+
+- url: /task/refreshstatus/
+  script: main.app
+  login: admin
+
+- url: /
+  script: main.app
+
+- url: .*
+  script: main.app
+  login: required
+
+
+libraries:
+- name: webapp2
+  version: latest
+- name: jinja2
+  version: latest
+
+inbound_services:
+- mail

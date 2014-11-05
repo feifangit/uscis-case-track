@@ -1,0 +1,4 @@
+cron:
+- description: status refresh
+  url: /task/refreshstatus/
+  schedule: every 6 hours
