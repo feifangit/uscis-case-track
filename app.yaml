@@ -20,6 +20,10 @@ handlers:
   script: main.app
   login: admin
 
+- url: /task/maintain/
+  script: main.app
+  login: admin
+
 - url: /
   script: main.app
 

@@ -153,7 +153,7 @@ class StarterRefreshStatus(webapp2.RequestHandler):
             taskqueue.add(url='/task/pullstatus/',
                           params={'rid': record.key.id()},
                           queue_name="refreshstatus", method="POST")
-        self.response.write("running")
+        self.response.write("case refreash task done")
 
 
 class RefreshStatusWorker(webapp2.RequestHandler):
@@ -167,9 +167,19 @@ class RefreshStatusWorker(webapp2.RequestHandler):
             send_status_update_email(c.user, c.number, existingstatus, newstatus)
 
 
+class MaintainTask(webapp2.RequestHandler):
+    def get(self):
+        for c in Case.query():
+            for st in c.status:
+                if st.status is None:
+                    c.status.remove(st)
+                    c.put()
+        self.response.write("maintain task done")
+
 app = webapp2.WSGIApplication([('/', MainHandler),
                                (r'/case/', CaseHandler),
                                (r'/about/', AboutHandler),
                                webapp2.Route(r'/case/<cnumber>/', CaseHandler),
+                               (r'/task/maintain/', MaintainTask),
                                (r'/task/refreshstatus/', StarterRefreshStatus),
                                (r'/task/pullstatus/', RefreshStatusWorker)], debug=settings.get("DEBUG", False))
