@@ -43,7 +43,7 @@ class Case(ndb.Model):
     def update_status(self, newstatus, updatelastcheck=True):
         changed = False
         now = datetime.datetime.utcnow()
-        if newstatus != self.currentstatus:
+        if newstatus and newstatus != self.currentstatus:
             # get delta days to last status
             tolaststatus = (now - self.status[-1].date).days if self.status else 0
             self.status.append(CaseStatus(status=newstatus, daystolaststatus=tolaststatus))
@@ -163,7 +163,7 @@ class RefreshStatusWorker(webapp2.RequestHandler):
         c = Case.get_by_id(int(rid))
         existingstatus = c.currentstatus
         newstatus = fetch_case_status(c.number)
-        if c.update_status(newstatus):
+        if newstatus and c.update_status(newstatus):
             send_status_update_email(c.user, c.number, existingstatus, newstatus)
 
 
