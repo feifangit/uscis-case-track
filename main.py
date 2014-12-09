@@ -25,20 +25,26 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 class CaseStatus(ndb.Model):
     date = ndb.DateTimeProperty(auto_now_add=True)
-    status = ndb.IntegerProperty()
+    status = ndb.StringProperty()
     daystolaststatus = ndb.IntegerProperty()
 
 
 class Case(ndb.Model):
     user = ndb.UserProperty()
     number = ndb.StringProperty(required=True, indexed=True)
-    initstatus = ndb.IntegerProperty(required=True)
-    currentstatus = ndb.IntegerProperty()
+    initstatus = ndb.StringProperty(required=True)
+    currentstatus = ndb.StringProperty()
 
     status = ndb.StructuredProperty(CaseStatus, repeated=True)
     date = ndb.DateTimeProperty(auto_now_add=True)
     lastcheck = ndb.DateTimeProperty()
     disabled = ndb.BooleanProperty(default=False)
+    finished = ndb.BooleanProperty(default=False)
+
+    @staticmethod
+    def is_finished(status):
+        return status.endswith("Case Was Approved")
+
 
     def update_status(self, newstatus, updatelastcheck=True):
         changed = False
@@ -51,20 +57,22 @@ class Case(ndb.Model):
             changed = True
         if updatelastcheck:
             self.lastcheck = now
+        if Case.is_finished(newstatus):
+            self.finished = True
 
         self.put()
         return changed
 
-    def to_dict(self):
-        d = super(Case, self).to_dict()
-        for stat in d.get("status", []):
-            if "status" in stat:
-                stat["status"] = get_status_str(stat["status"])
-        if "initstatus" in d:
-            d["initstatus"] = get_status_str(d["initstatus"])
-        if "currentstatus" in d:
-            d["currentstatus"] = get_status_str(d["currentstatus"])
-        return d
+    # def to_dict(self):
+    #     d = super(Case, self).to_dict()
+    #     for stat in d.get("status", []):
+    #         if "status" in stat:
+    #             stat["status"] = get_status_str(stat["status"])
+    #     if "initstatus" in d:
+    #         d["initstatus"] = get_status_str(d["initstatus"])
+    #     if "currentstatus" in d:
+    #         d["currentstatus"] = get_status_str(d["currentstatus"])
+    #     return d
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -119,9 +127,9 @@ class CaseHandler(JSONRequestHandler):
             initstatus = fetch_case_status(cnumber)
             if initstatus is None:
                 return self.return_json({"err": "no case information found"})
-            if initstatus >= 6:
+            if Case.is_finished(initstatus):
                 return self.return_json(
-                    {"err": "we don't accept cases with status \"%s\" " % get_status_str(initstatus)})
+                    {"err": "we don't accept cases with status \"%s\" " % initstatus})
             c = Case(number=cnumber,
                      initstatus=initstatus,
                      user=users.get_current_user(),
@@ -130,7 +138,7 @@ class CaseHandler(JSONRequestHandler):
         except:
             traceback.print_exc()
             return self.return_json({"err": "unknown error"})
-        return self.return_json({"ok": True, "initstatus": get_status_str(initstatus)})
+        return self.return_json({"ok": True, "initstatus": initstatus})
 
     def delete(self, cnumber):
         record = Case.query(Case.number == cnumber,
@@ -147,7 +155,7 @@ class CaseHandler(JSONRequestHandler):
 
 class StarterRefreshStatus(webapp2.RequestHandler):
     def get(self):
-        todo = Case.query(Case.currentstatus < 6, Case.disabled == False)
+        todo = Case.query(Case.finished == False, Case.disabled == False)
         logging.info('processing: %s records' % todo.count())
         for record in todo:
             taskqueue.add(url='/task/pullstatus/',

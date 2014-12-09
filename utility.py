@@ -27,11 +27,13 @@ class JSONRequestHandler(webapp2.RequestHandler):
 def fetch_case_status(casenumber):
     data = {
         'appReceiptNum': casenumber,
-        'submit.x': '39',
-        'submit.y': '12'
+        'changeLocale': '',
+        'completedActionsCurrentPage': '0',
+        'upcomingActionsCurrentPage':'0',
+        'caseStatusSearchBtn':'CHECK STATUS'
     }
 
-    req = urllib2.Request(url="https://egov.uscis.gov/cris/Dashboard/CaseStatus.do",
+    req = urllib2.Request(url="https://egov.uscis.gov/casestatus/mycasestatus.do",
                           data=urllib.urlencode(data),
                           headers={"Content-type": "application/x-www-form-urlencoded",
                                    "Refer": "https://egov.uscis.gov/cris/Dashboard/CaseStatus.do",
@@ -42,8 +44,8 @@ def fetch_case_status(casenumber):
     response = urllib2.urlopen(req)
     the_page = response.read()
 
-    r = re.match(r".*bucket-on.*?id=\"bucket(?P<prog>\w+).*", the_page, re.DOTALL)
-    return int(r.groupdict().get("prog")) if r else None
+    r = re.match(r".*Your Current Status:</strong>\s*(?P<prog>[^<]+?)\s*<span.*", the_page, re.DOTALL).groupdict()
+    return r.get("prog") if r else None
 
 
 def verify_cnumber(cnumber):
@@ -53,22 +55,22 @@ def verify_cnumber(cnumber):
     return False
 
 
-STATUS_ID_EXPLAIN = {
-    1: "Acceptance",
-    2: "Initial Review",
-    3: "Request for Evidence",
-    4: "Request for Evidence Response Review",
-    5: "Testing and Interview",
-    6: "Decision",
-    7: "Post Decision Activity",
-    8: "Oath Ceremony",
-    9: "Card/ Document Production"
-
-}
-
-
-def get_status_str(_id):
-    return STATUS_ID_EXPLAIN.get(int(_id), "unknown")
+# STATUS_ID_EXPLAIN = {
+#     1: "Acceptance",
+#     2: "Initial Review",
+#     3: "Request for Evidence",
+#     4: "Request for Evidence Response Review",
+#     5: "Testing and Interview",
+#     6: "Decision",
+#     7: "Post Decision Activity",
+#     8: "Oath Ceremony",
+#     9: "Card/ Document Production"
+#
+# }
+#
+#
+# def get_status_str(_id):
+#     return STATUS_ID_EXPLAIN.get(int(_id), "unknown")
 
 
 def send_status_update_email(recipient, cnumber, prevstatus, currstatus):
@@ -88,6 +90,6 @@ def send_status_update_email(recipient, cnumber, prevstatus, currstatus):
         Thanks,
         """ % (recipient.nickname(),
                cnumber,
-               get_status_str(prevstatus),
-               get_status_str(currstatus),)
+               prevstatus,
+               currstatus,)
     message.send()
