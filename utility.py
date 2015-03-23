@@ -2,12 +2,13 @@ import json
 import re
 import urllib
 import urllib2
+from HTMLParser import HTMLParser
 
 import webapp2
 from google.appengine.api import users, mail
 
 import datetime
-
+htmlparser = HTMLParser()
 
 class AppJSONEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -45,7 +46,7 @@ def fetch_case_status(casenumber):
     the_page = response.read()
 
     r = re.match(r".*Your Current Status:</strong>\s*(?P<prog>[^<]+?)\s*<span.*", the_page, re.DOTALL).groupdict()
-    return r.get("prog") if r else None
+    return htmlparser.unescape(r.get("prog")) if r else None
 
 
 def verify_cnumber(cnumber):
