@@ -177,7 +177,7 @@ class RefreshStatusWorker(webapp2.RequestHandler):
         existingstatus = c.currentstatus
         newstatus = fetch_case_status(c.number)
         if newstatus and c.update_status(newstatus):
-            send_status_update_email(c.user, c.number, existingstatus, newstatus)
+            send_status_update_email(c.user, c.number, existingstatus, newstatus, c.additionalemail if c.additionalemail else None)
 
 
 class MaintainTask(webapp2.RequestHandler):

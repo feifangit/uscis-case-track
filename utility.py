@@ -73,11 +73,13 @@ def verify_cnumber(cnumber):
 #     return STATUS_ID_EXPLAIN.get(int(_id), "unknown")
 
 
-def send_status_update_email(recipient, cnumber, prevstatus, currstatus):
+def send_status_update_email(recipient, cnumber, prevstatus, currstatus, email2):
     message = mail.EmailMessage(sender="case monitoring <support@case-monitoring.appspotmail.com>",
                                 subject="Status of your case %s  changed." % cnumber)
 
     message.to = recipient.email()
+    if email2:
+        message.cc = email2
     message.body = """
         Dear %s:
 
