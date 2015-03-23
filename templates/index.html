@@ -152,9 +152,12 @@
             <div class="row">
                 <div class="col-md-8">
                     <h4 class="todo-name">
+                        <%#finished%><span class="badge badge-default small color-white">finished</span><%/finished%>
                         <strong><%&number%></strong>
                     </h4>
-                    <span class="label label-info small"><%&status%></span> <%&date%>
+                    <%#status%>
+                        <span class="label label-info small"><%&status%></span> Last check date:<%&date%>
+                    <%/status%>
                 </div>
                 <div class="col-md-4">
                     <div class="pull-right">
@@ -180,11 +183,17 @@
     <%/loop%>
 </script>
 <script type="text/template" id="detailTpl">
-    <div class="well row">
+    <div class="well">
+    <div class="row">
         <div class="col-md-5">Number: <span class="info"><%&number%></span></div>
-        <div class="col-md-5">Current Status: <span class="info"><%&currentstatus%></span></div>
-        </br>
+        <div class="col-md-5">Current Status: <span class="info"><strong><%&currentstatus%></strong></span></div>
+    </div>
+    <div class="row">
+        <div class="col-md-10"><span class="info">Additional Email: <%&additionalemail%></span></div>
+    </div>
+    <div class="row">
         <div class="col-md-10"><span class="text-muted small">Last Check: <%&lastcheck%></span></div>
+    </div>
     </div>
     <ul class="timeline">
         <%#status%>
@@ -217,6 +226,10 @@
         <div class="form-group">
             <label for="id_number">Number:</label>
             <input type="text" class="form-control" id="id_number" placeholder="Enter case number">
+        </div>
+        <div class="form-group">
+            <label for="id_email">Additional Email:</label>
+            <input type="email" class="form-control" id="id_email" placeholder="Enter email address">
         </div>
         <div class="form-group">
             <div class="alert alert-warning alert-dismissible" role="alert">

@@ -223,3 +223,11 @@ p {
 }
 
 /* timeline style end */
+
+.modal-body, .modal-body p{
+    font-size: 13px;
+}
+
+.color-white{
+    color: #fff !important;
+}

@@ -35,7 +35,7 @@ require(['jquery', 'mustache', 'noty', 'flat', 'moment'], function ($, Mustache)
 
     var getCases = function () {
       $.ajax({'type': 'GET', 'url': '/case/', 'dataType': 'json'}).done(function (data) {
-        if(spinner){
+        if (spinner) {
           spinner.stop();
         }
         if (data.err || data.hasOwnProperty('err')) {
@@ -47,8 +47,9 @@ require(['jquery', 'mustache', 'noty', 'flat', 'moment'], function ($, Mustache)
         for (var i in data) {
           CasesCache[data[i].number] = data[i];
           _loop.push({
+            finished: data[i].finished,
             number: data[i].number,
-            status: (data[i].currentstatus ? data[i].currentstatus : 'unknown'),
+            status: ($.trim(data[i].currentstatus) ? data[i].currentstatus : 'unknown'),
             date: (data[i].lastcheck ? moment.utc(data[i].lastcheck).local().format("MM/DD/YYYY") : 'unknown time')
           });
         }
@@ -68,15 +69,19 @@ require(['jquery', 'mustache', 'noty', 'flat', 'moment'], function ($, Mustache)
 
     var deleteFun = function (e) {
       e.preventDefault();
-      $(this).attr('disabled','true');
+      $(this).attr('disabled', 'true');
       var $this = e.data.el;
       var $li = $this.parents('li');
       var $modal = $('#div_modal_sm');
-      $.ajax({'type': 'delete', 'url': '/case/' + $this.attr('caseid') + '/', 'dataType': 'json'}).done(function (data) {
+      $.ajax({
+        'type': 'delete',
+        'url': '/case/' + $this.attr('caseid') + '/',
+        'dataType': 'json'
+      }).done(function (data) {
         if (data.ok && data.hasOwnProperty('ok')) {
           noty($.extend({}, notyOpt, {text: 'Delete case success!', type: 'success'}));
           $li.remove();
-          if($('#ul_cases').find('li').length<1){
+          if ($('#ul_cases').find('li').length < 1) {
             $('#ul_cases').append('<li><div class="todo-content"><div class="row"><div class="col-md-8"><p>No record found.</p></div></div></div></li>');
           }
           $modal.find('.btn-danger').unbind('click');
@@ -118,14 +123,23 @@ require(['jquery', 'mustache', 'noty', 'flat', 'moment'], function ($, Mustache)
     var postCaseFun = function (e) {
       e.preventDefault();
       var $number = $('#id_number');
+      var $email = $('#id_email');
+      var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       var $this = $(this);
       if (!$number.val()) {
         noty($.extend({}, notyOpt, {text: 'Must input number! ', type: 'error'}));
         return;
       }
+
+      if ($email.val() && !re.test($email.val())) {
+        noty($.extend({}, notyOpt, {text: 'Must input correct email format! ', type: 'error'}));
+        return;
+      }
+
+
       var $modal = $('#div_modal');
-      $this.attr('disabled','true');
-      $.ajax({'type': 'post', 'url': '/case/' + $('#id_number').val() + '/', 'dataType': 'json'}).done(function (data) {
+      $this.attr('disabled', 'true');
+      $.ajax({'type': 'post', 'url': '/case/' + $number.val() + '/',"data":{'add_email':$email.val()}, 'dataType': 'json'}).done(function (data) {
         if (data.ok && data.hasOwnProperty('ok')) {
           noty($.extend({}, notyOpt, {text: 'Add case successful!', type: 'success'}));
           setTimeout(getCases, 500);
