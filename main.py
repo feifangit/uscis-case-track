@@ -32,6 +32,7 @@ class CaseStatus(ndb.Model):
 class Case(ndb.Model):
     user = ndb.UserProperty()
     number = ndb.StringProperty(required=True, indexed=True)
+    additionalemail = ndb.StringProperty()
     initstatus = ndb.StringProperty(required=True)
     currentstatus = ndb.StringProperty()
 
@@ -125,12 +126,16 @@ class CaseHandler(JSONRequestHandler):
 
         try:
             initstatus = fetch_case_status(cnumber)
+            addemail = ''
             if initstatus is None:
                 return self.return_json({"err": "no case information found"})
             if Case.is_finished(initstatus):
                 return self.return_json(
                     {"err": "we don't accept cases with status \"%s\" " % initstatus})
+            if self.request.POST.get('add_email'):
+                addemail = self.request.POST.get('add_email')
             c = Case(number=cnumber,
+                     additionalemail=addemail,
                      initstatus=initstatus,
                      user=users.get_current_user(),
                      )
