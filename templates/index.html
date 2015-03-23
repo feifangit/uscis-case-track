@@ -156,7 +156,7 @@
                         <strong><%&number%></strong>
                     </h4>
                     <%#status%>
-                        <span class="label label-info small"><%&status%></span> Last check date:<%&date%>
+                        <span class="label label-info small"><%&status%></span> status sync :<%&date%>
                     <%/status%>
                 </div>
                 <div class="col-md-4">
@@ -189,7 +189,8 @@
         <div class="col-md-5">Current Status: <span class="info"><strong><%&currentstatus%></strong></span></div>
     </div>
     <div class="row">
-        <div class="col-md-10"><span class="info">Additional Email: <%&additionalemail%></span></div>
+        {{ additionalemail }}
+        <div class="col-md-10"><span class="info">Notification: {{ user }} <%&additionalemail%></span></div>
     </div>
     <div class="row">
         <div class="col-md-10"><span class="text-muted small">Last Check: <%&lastcheck%></span></div>
@@ -228,7 +229,7 @@
             <input type="text" class="form-control" id="id_number" placeholder="Enter case number">
         </div>
         <div class="form-group">
-            <label for="id_email">Additional Email:</label>
+            <label for="id_email">Additional Email (optional):</label>
             <input type="email" class="form-control" id="id_email" placeholder="Enter email address">
         </div>
         <div class="form-group">
