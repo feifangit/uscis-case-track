@@ -50,7 +50,7 @@ require(['jquery', 'mustache', 'noty', 'flat', 'moment'], function ($, Mustache)
             finished: data[i].finished,
             number: data[i].number,
             status: ($.trim(data[i].currentstatus) ? data[i].currentstatus : 'unknown'),
-            date: (data[i].lastcheck ? moment.utc(data[i].lastcheck).local().format("MM/DD/YYYY") : 'unknown time')
+            lastcheck: (data[i].lastcheck ? moment.utc(data[i].lastcheck).local().format("MM/DD/YYYY h:mm a") : 'unknown time')
           });
         }
         $ul.html(Mustache.render($('#listTpl').html(), {loop: _loop}));

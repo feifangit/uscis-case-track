@@ -68,7 +68,7 @@
                     <span class="fui-alert-circle"></span>
                     Data source: USCIS website: http://www.uscis.gov<br>
                     Data refresh interval: every 3 hours.<br>
-                    Cases with status "Decision", "Post Decision Activity", "Oath Ceremony", "Card/ Document Production" will no longer be updated.
+                    Cases with status "Case Was Approved" will no longer be updated.
                 </span>
             </div>
         </div>
@@ -156,7 +156,8 @@
                         <strong><%&number%></strong>
                     </h4>
                     <%#status%>
-                        <span class="label label-info small"><%&status%></span> status sync :<%&date%>
+                    <div>
+                        <span class="label label-info small"><%&status%></span></div> latest status sync: <%&lastcheck%>
                     <%/status%>
                 </div>
                 <div class="col-md-4">
@@ -190,10 +191,10 @@
     </div>
     <div class="row">
         {{ additionalemail }}
-        <div class="col-md-10"><span class="info">Notification: {{ user }} <%&additionalemail%></span></div>
+        <div class="col-md-10"><span class="info">Email to: {{ user }}  <%&additionalemail%></span></div>
     </div>
     <div class="row">
-        <div class="col-md-10"><span class="text-muted small">Last Check: <%&lastcheck%></span></div>
+        <div class="col-md-10"><span class="text-muted small">Lastest status sync: <%&lastcheck%></span></div>
     </div>
     </div>
     <ul class="timeline">
