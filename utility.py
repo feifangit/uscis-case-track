@@ -25,7 +25,25 @@ class JSONRequestHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(d, **options))
 
 
-def fetch_case_status(casenumber):
+def fetch_case_status(casenumber, adjacent=0):
+    status, adjacentstatus = _fetch_case_status(casenumber), None
+    if adjacent:
+        adjacentstatus = [{'casenumber': adjcn, "status":_fetch_case_status(adjcn)} for adjcn in _get_adjacent_casenumbers(casenumber, adjacent)]
+    return status, adjacentstatus
+
+
+def _get_adjacent_casenumbers(casenumber, adjacent):
+    try:
+        typestr, cnumber = casenumber[:3], int(casenumber[3:])
+        adjnumbers = [cnumber-i for i in range(adjacent, 0, -1)] + [cnumber+i+1 for i in range(adjacent)]
+        return map(lambda i:typestr+str(i), adjnumbers)
+    except:
+        pass
+    return []
+
+
+def _fetch_case_status(casenumber):
+    # print casenumber
     data = {
         'appReceiptNum': casenumber,
         'changeLocale': '',

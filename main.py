@@ -41,15 +41,17 @@ class Case(ndb.Model):
     lastcheck = ndb.DateTimeProperty()
     disabled = ndb.BooleanProperty(default=False)
     finished = ndb.BooleanProperty(default=False)
+    adjcasestatus = ndb.StringProperty()
 
     @staticmethod
     def is_finished(status):
         return status.endswith("Case Was Approved")
 
 
-    def update_status(self, newstatus, updatelastcheck=True):
+    def update_status(self, newstatus, adjstatus, updatelastcheck=True):
         changed = False
         now = datetime.datetime.utcnow()
+        self.adjcasestatus = json.dumps(adjstatus)  # always update adjacent case status
         if newstatus and newstatus != self.currentstatus:
             # get delta days to last status
             tolaststatus = (now - self.status[-1].date).days if self.status else 0
@@ -64,16 +66,10 @@ class Case(ndb.Model):
         self.put()
         return changed
 
-    # def to_dict(self):
-    #     d = super(Case, self).to_dict()
-    #     for stat in d.get("status", []):
-    #         if "status" in stat:
-    #             stat["status"] = get_status_str(stat["status"])
-    #     if "initstatus" in d:
-    #         d["initstatus"] = get_status_str(d["initstatus"])
-    #     if "currentstatus" in d:
-    #         d["currentstatus"] = get_status_str(d["currentstatus"])
-    #     return d
+    def to_dict(self):
+        d = super(Case, self).to_dict()
+        d["adjcasestatus"] = json.loads(d.get("adjcasestatus",""))
+        return d
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -125,7 +121,7 @@ class CaseHandler(JSONRequestHandler):
                 existingcase.key.delete()
 
         try:
-            initstatus = fetch_case_status(cnumber)
+            initstatus, adjstatus = fetch_case_status(cnumber, adjacent=2)
             addemail = ''
             if initstatus is None:
                 return self.return_json({"err": "no case information found"})
@@ -137,9 +133,9 @@ class CaseHandler(JSONRequestHandler):
             c = Case(number=cnumber,
                      additionalemail=addemail,
                      initstatus=initstatus,
-                     user=users.get_current_user(),
+                     user=users.get_current_user()
                      )
-            c.update_status(initstatus)
+            c.update_status(initstatus, adjstatus)
         except:
             traceback.print_exc()
             return self.return_json({"err": "unknown error"})
@@ -175,8 +171,8 @@ class RefreshStatusWorker(webapp2.RequestHandler):
         logging.debug("processing: %s" % rid)
         c = Case.get_by_id(int(rid))
         existingstatus = c.currentstatus
-        newstatus = fetch_case_status(c.number)
-        if newstatus and len(newstatus)>4 and c.update_status(newstatus):
+        newstatus, adjcasestatus = fetch_case_status(c.number, adjacent=2)
+        if newstatus and len(newstatus)>4 and c.update_status(newstatus, adjcasestatus):
             send_status_update_email(c.user, c.number, existingstatus, newstatus, c.additionalemail if c.additionalemail else None)
 
 
