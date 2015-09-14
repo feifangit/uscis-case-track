@@ -176,7 +176,7 @@ class RefreshStatusWorker(webapp2.RequestHandler):
         c = Case.get_by_id(int(rid))
         existingstatus = c.currentstatus
         newstatus = fetch_case_status(c.number)
-        if newstatus and c.update_status(newstatus):
+        if newstatus and len(newstatus)>4 and c.update_status(newstatus):
             send_status_update_email(c.user, c.number, existingstatus, newstatus, c.additionalemail if c.additionalemail else None)
 
 

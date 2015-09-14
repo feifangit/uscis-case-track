@@ -46,7 +46,7 @@ def fetch_case_status(casenumber):
     the_page = response.read()
 
     r = re.match(r".*Your Current Status:</strong>\s*(?P<prog>[^<]+?)\s*<span.*", the_page, re.DOTALL).groupdict()
-    return htmlparser.unescape(r.get("prog")) if r else None
+    return htmlparser.unescape(r.get("prog")).strip() if r else None
 
 
 def verify_cnumber(cnumber):
