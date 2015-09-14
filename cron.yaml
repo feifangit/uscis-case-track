@@ -1,4 +1,4 @@
 cron:
 - description: status refresh
   url: /task/refreshstatus/
-  schedule: every 3 hours
+  schedule: every 30 mins
