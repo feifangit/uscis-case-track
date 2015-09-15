@@ -185,10 +185,17 @@ class MaintainTask(webapp2.RequestHandler):
                     c.put()
         self.response.write("maintain task done")
 
+class AdminStat(webapp2.RequestHandler):
+    def get(self):
+        casetotal = Case.query().count()
+        self.response.write('Case numbers: %s'% casetotal)
+
 app = webapp2.WSGIApplication([('/', MainHandler),
                                (r'/case/', CaseHandler),
                                (r'/about/', AboutHandler),
                                webapp2.Route(r'/case/<cnumber>/', CaseHandler),
                                (r'/task/maintain/', MaintainTask),
                                (r'/task/refreshstatus/', StarterRefreshStatus),
-                               (r'/task/pullstatus/', RefreshStatusWorker)], debug=settings.get("DEBUG", False))
+                               (r'/task/pullstatus/', RefreshStatusWorker),
+                               (r'/admin/stat/', AdminStat)], 
+                               debug=settings.get("DEBUG", False))
