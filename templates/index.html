@@ -202,19 +202,18 @@
     <div class="well">
         <div class="row">
             <div class="col-md-10">
-                <p><strong>Case queue:</strong></p>
+                <p><strong>Adjacent cases</strong></p>
                 <ul class="list-unstyled">
                     <%#oldercases%>
-                    <li>Case Number: <%&casenumber%>, Status: <strong><%&status%></strong></li>
+                    <li>Case: <%&casenumber%> ...... <strong><%&status%></strong></li>
                     <li><i class="fa fa-chevron-down margin-left-8"></i></li>
                     <%/oldercases%>
-                    <li><span class="label label-info"><i class="fui-location"></i> <strong>You are here.</strong></span></li>
-                    <li><i class="fa fa-chevron-down margin-left-8"></i></li>
+                    <li><span class="label label-info"><i class="fui-location"></i> <strong>You (<%&number%>) are here .</strong></span></li>
                     <%#newercases%>
-                    <li>Case Number: <%&casenumber%>, Status: <strong><%&status%></strong></li>
                     <li><i class="fa fa-chevron-down margin-left-8"></i></li>
+                    <li>Case: <%&casenumber%> ...... <strong><%&status%></strong></li>
+                    
                     <%/newercases%>
-                    <li><span class="margin-left-8"><b>......</b></span></li>
                 </ul>
             </div>
 
