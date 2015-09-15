@@ -5,7 +5,8 @@ require.config({
     flat: 'js/flat-ui.min',
     noty: 'js/vendor/jquery.noty.packaged.min',
     mustache: 'js/vendor/mustache',
-    moment: 'js/vendor/moment'
+    moment: 'js/vendor/moment',
+    spinner: 'js/vendor/spin.min'
   },
   shim: {
     flat: {
@@ -20,7 +21,7 @@ require.config({
   }
 });
 
-require(['jquery', 'mustache', 'noty', 'flat', 'moment'], function ($, Mustache) {
+require(['jquery', 'mustache', 'spinner', 'noty', 'flat', 'moment'], function ($, Mustache, Spinner) {
     var CasesCache = {};
     $.ajaxSetup({
       cache: false
@@ -104,11 +105,27 @@ require(['jquery', 'mustache', 'noty', 'flat', 'moment'], function ($, Mustache)
         n.date = (n.date ? moment.utc(n.date).local().format("MM/DD/YYYY") : "unknown time");
         return n;
       });
+
+      if (data.adjcasestatus && data.adjcasestatus.length > 0) {
+        data.oldercases = [];
+        data.newercases = [];
+        $.each(data.adjcasestatus, function (idx, casestatus) {
+          if (idx < 2) {
+            data.oldercases.push(casestatus);
+          } else {
+            data.newercases.push(casestatus);
+          }
+        });
+      }
       var $modal = $('#div_modal');
       $modal.find('.modal-title').html('Case Detail');
       $modal.find('.modal-body').html(Mustache.render($('#detailTpl').html(), data));
       $modal.find('.btn-primary').hide();
-      $modal.modal('show');
+      $modal.modal('show').on('shown.bs.modal', function () {
+        $modal.css('overflow-y', 'scroll');
+      }).on('hidden.bs.modal', function () {
+        $modal.css('overflow-y', 'hidden');
+      });
     };
 
     var addFun = function (e) {
@@ -126,6 +143,7 @@ require(['jquery', 'mustache', 'noty', 'flat', 'moment'], function ($, Mustache)
       var $email = $('#id_email');
       var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       var $this = $(this);
+      var $modal = $('#div_modal');
       if (!$number.val()) {
         noty($.extend({}, notyOpt, {text: 'Must input number! ', type: 'error'}));
         return;
@@ -136,10 +154,45 @@ require(['jquery', 'mustache', 'noty', 'flat', 'moment'], function ($, Mustache)
         return;
       }
 
+      $('.spinning').remove();
+      $modal.find('.modal-title')
+        .append('<span id="spin_span" class="spinning pull-right" style="margin-top:15px;margin-right:' +
+        $('#title').width() / 7 + 'px;">Querying your case and adjacent cases.</span>');
 
-      var $modal = $('#div_modal');
+      var target = document.getElementById('spin_span');
+
+      var spin = new Spinner({
+        lines: 17 // The number of lines to draw
+        , length: 0 // The length of each line
+        , width: 3 // The line thickness
+        , radius: 10 // The radius of the inner circle
+        , scale: 1 // Scales overall size of the spinner
+        , corners: 1 // Corner roundness (0..1)
+        , color: '#000' // #rgb or #rrggbb or array of colors
+        , opacity: 0.25 // Opacity of the lines
+        , rotate: 38 // The rotation offset
+        , direction: 1 // 1: clockwise, -1: counterclockwise
+        , speed: 1 // Rounds per second
+        , trail: 60 // Afterglow percentage
+        , fps: 20 // Frames per second when using setTimeout() as a fallback for CSS
+        , zIndex: 2e9 // The z-index (defaults to 2000000000)
+        , className: 'spinner' // The CSS class to assign to the spinner
+        , top: '35px' // Top position relative to parent
+        , left: '90%' // Left position relative to parent
+        , shadow: true // Whether to render a shadow
+        , hwaccel: false // Whether to use hardware acceleration
+        , position: 'absolute' // Element positioning
+      }).spin(target);
+
       $this.attr('disabled', 'true');
-      $.ajax({'type': 'post', 'url': '/case/' + $number.val() + '/',"data":{'add_email':$email.val()}, 'dataType': 'json'}).done(function (data) {
+      $.ajax({
+        'type': 'post',
+        'url': '/case/' + $number.val() + '/',
+        "data": {'add_email': $email.val()},
+        'dataType': 'json'
+      }).done(function (data) {
+        spin.stop();
+        $('.spinning').remove();
         if (data.ok && data.hasOwnProperty('ok')) {
           noty($.extend({}, notyOpt, {text: 'Add case successful!', type: 'success'}));
           setTimeout(getCases, 500);

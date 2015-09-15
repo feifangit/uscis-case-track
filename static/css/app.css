@@ -231,3 +231,8 @@ p {
 .color-white{
     color: #fff !important;
 }
+
+.spinning {
+    font-size: 12px;
+    color: #bb7a44;
+}

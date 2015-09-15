@@ -11,9 +11,11 @@
     <!-- Loading Flat UI -->
     <link href="static/css/flat-ui.css" rel="stylesheet">
 
+    <link href="static/css/font-awesome.min.css" rel="stylesheet">
 {#    <link rel="shortcut icon" href="static/img/favicon.ico">#}
     <!-- Loading app custom style -->
     <link href="static/css/app.css" rel="stylesheet">
+
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
     <!--[if lt IE 9]>
       <script src="static/js/vendor/html5shiv.js"></script>
@@ -82,7 +84,7 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
                         class="sr-only">Close</span></button>
-                <h4 class="modal-title"></h4>
+                <h4 class="modal-title" id="title"></h4>
             </div>
             <div class="modal-body">
             </div>
@@ -196,6 +198,27 @@
     <div class="row">
         <div class="col-md-10"><span class="text-muted small">Lastest status sync: <%&lastcheck%></span></div>
     </div>
+    </div>
+    <div class="well">
+        <div class="row">
+            <div class="col-md-10">
+                <p><strong>Case queue:</strong></p>
+                <ul class="list-unstyled">
+                    <%#oldercases%>
+                    <li>Case Number: <%&casenumber%>, Status: <strong><%&status%></strong></li>
+                    <li><i class="fa fa-chevron-down margin-left-8"></i></li>
+                    <%/oldercases%>
+                    <li><span class="label label-info"><i class="fui-location"></i> <strong>You are here.</strong></span></li>
+                    <li><i class="fa fa-chevron-down margin-left-8"></i></li>
+                    <%#newercases%>
+                    <li>Case Number: <%&casenumber%>, Status: <strong><%&status%></strong></li>
+                    <li><i class="fa fa-chevron-down margin-left-8"></i></li>
+                    <%/newercases%>
+                    <li><span class="margin-left-8"><b>......</b></span></li>
+                </ul>
+            </div>
+
+        </div>
     </div>
     <ul class="timeline">
         <%#status%>
