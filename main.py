@@ -41,7 +41,7 @@ class Case(ndb.Model):
     lastcheck = ndb.DateTimeProperty()
     disabled = ndb.BooleanProperty(default=False)
     finished = ndb.BooleanProperty(default=False)
-    adjcasestatus = ndb.StringProperty()
+    adjcasestatus = ndb.StringProperty(default="{}")
 
     @staticmethod
     def is_finished(status):
