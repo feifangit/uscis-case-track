@@ -42,6 +42,7 @@ class Case(ndb.Model):
     disabled = ndb.BooleanProperty(default=False)
     finished = ndb.BooleanProperty(default=False)
     adjcasestatus = ndb.StringProperty(default="{}")
+    adjacentnotify = ndb.BooleanProperty(default=False)
 
     @staticmethod
     def is_finished(status):
@@ -49,8 +50,21 @@ class Case(ndb.Model):
 
 
     def update_status(self, newstatus, adjstatus, updatelastcheck=True):
-        changed = False
+        # changed: case itself
+        # adjchanged: adjacent cases changed?
+        changed, adjchanged = False, []
         now = datetime.datetime.utcnow()
+
+        prevadjstatus = json.loads(self.adjcasestatus)
+        if self.adjacentnotify and prevadjstatus:  # if user care about adj cases
+            prevdict = {c.get("casenumber"):c.get("status") for c in prevadjstatus}
+            currdict = {c.get("casenumber"):c.get("status") for c in adjstatus}
+            for k in prevdict.keys():
+                prevs = prevdict[k]
+                currs = currdict.get(k, '')
+                if prevs != currs:
+                    adjchanged.append((k, prevs, currs))
+
         self.adjcasestatus = json.dumps(adjstatus)  # always update adjacent case status
         if newstatus and newstatus != self.currentstatus:
             # get delta days to last status
@@ -58,13 +72,15 @@ class Case(ndb.Model):
             self.status.append(CaseStatus(status=newstatus, daystolaststatus=tolaststatus))
             self.currentstatus = newstatus
             changed = True
+        
+
         if updatelastcheck:
             self.lastcheck = now
         if Case.is_finished(newstatus):
             self.finished = True
 
         self.put()
-        return changed
+        return changed, adjchanged
 
     def to_dict(self):
         d = super(Case, self).to_dict()
@@ -122,18 +138,17 @@ class CaseHandler(JSONRequestHandler):
 
         try:
             initstatus, adjstatus = fetch_case_status(cnumber, adjacent=2)
-            addemail = ''
             if initstatus is None:
                 return self.return_json({"err": "no case information found"})
             if Case.is_finished(initstatus):
                 return self.return_json(
                     {"err": "we don't accept cases with status \"%s\" " % initstatus})
-            if self.request.POST.get('add_email'):
-                addemail = self.request.POST.get('add_email')
+            
             c = Case(number=cnumber,
-                     additionalemail=addemail,
+                     additionalemail=self.request.POST.get('add_email', ''),
                      initstatus=initstatus,
-                     user=users.get_current_user()
+                     user=users.get_current_user(),
+                     adjacentnotify=self.request.POST.get('is_notify', "false").upper()!="FALSE"
                      )
             c.update_status(initstatus, adjstatus)
         except:
@@ -172,8 +187,11 @@ class RefreshStatusWorker(webapp2.RequestHandler):
         c = Case.get_by_id(int(rid))
         existingstatus = c.currentstatus
         newstatus, adjcasestatus = fetch_case_status(c.number, adjacent=2)
-        if newstatus and len(newstatus)>4 and c.update_status(newstatus, adjcasestatus):
+        casechanged, adjchanged = c.update_status(newstatus, adjcasestatus)
+        if newstatus and len(newstatus)>4 and casechanged:
             send_status_update_email(c.user, c.number, existingstatus, newstatus, c.additionalemail if c.additionalemail else None)
+        if adjchanged:
+            send_adj_status_update_email(c.user, c.number, adjchanged, c.additionalemail if c.additionalemail else None)    
 
 
 class MaintainTask(webapp2.RequestHandler):

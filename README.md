@@ -10,7 +10,8 @@ Existing running service: <http://case-monitoring.appspot.com/>
 
 
 ## Summary
-The application will check your USCIS case and **adjacent cases** every 30 mins. And send you notification by email if status changes.
+The application will check your USCIS case and **adjacent cases** every 30 mins. And send you notification by email if status or adjacent case status changes.
+
 ![screenshot_adjacent_case](screenshot_adjacent_case.png)
 
 ## Contributors

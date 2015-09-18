@@ -114,3 +114,27 @@ def send_status_update_email(recipient, cnumber, prevstatus, currstatus, email2)
                prevstatus,
                currstatus,)
     message.send()
+
+def send_adj_status_update_email(recipient, cnumber, changelist, email2):
+    message = mail.EmailMessage(sender="case monitoring <support@case-monitoring.appspotmail.com>",
+                                subject="Some adjacent cases status changed (your case: %s)." % cnumber)
+
+    message.to = recipient.email()
+    if email2:
+        message.cc = email2
+    message.body = """
+        Dear %s:
+
+        Based on your case number: %s, following adjacent cases have been changed
+%s
+        Please check it out on
+           http://case-monitoring.appspot.com
+        or
+           https://egov.uscis.gov/cris/Dashboard/CaseStatus.do
+
+        Thanks,
+        """ % (recipient.nickname(),
+               cnumber,
+               "\n".join(["%s, %s -> %s"%(cn, prevs, currs) for cn, prevs, currs in changelist])
+               )
+    message.send()

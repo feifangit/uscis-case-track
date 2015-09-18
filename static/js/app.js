@@ -152,11 +152,6 @@ require(['jquery', 'mustache', 'spinner', 'noty', 'flat', 'moment'], function ($
         return;
       }
 
-      if (is_notify && !$email.val()) {
-        noty($.extend({}, notyOpt, {text: 'Must input email! ', type: 'error'}));
-        $email.parent().addClass('has-error');
-        return;
-      }
 
       if ($email.val() && !re.test($email.val())) {
         noty($.extend({}, notyOpt, {text: 'Must input correct email format! ', type: 'error'}));
