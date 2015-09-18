@@ -144,13 +144,23 @@ require(['jquery', 'mustache', 'spinner', 'noty', 'flat', 'moment'], function ($
       var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       var $this = $(this);
       var $modal = $('#div_modal');
+      var is_notify = $('#id_notification').prop('checked');
+      $email.parent().removeClass('has-error');
+
       if (!$number.val()) {
         noty($.extend({}, notyOpt, {text: 'Must input number! ', type: 'error'}));
         return;
       }
 
+      if (is_notify && !$email.val()) {
+        noty($.extend({}, notyOpt, {text: 'Must input email! ', type: 'error'}));
+        $email.parent().addClass('has-error');
+        return;
+      }
+
       if ($email.val() && !re.test($email.val())) {
         noty($.extend({}, notyOpt, {text: 'Must input correct email format! ', type: 'error'}));
+        $email.parent().addClass('has-error');
         return;
       }
 
@@ -188,7 +198,7 @@ require(['jquery', 'mustache', 'spinner', 'noty', 'flat', 'moment'], function ($
       $.ajax({
         'type': 'post',
         'url': '/case/' + $number.val() + '/',
-        "data": {'add_email': $email.val()},
+        "data": {'add_email': $email.val(), 'is_notify': is_notify},
         'dataType': 'json'
       }).done(function (data) {
         spin.stop();
