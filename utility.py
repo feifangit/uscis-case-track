@@ -2,6 +2,7 @@ import json
 import re
 import urllib
 import urllib2
+import logging
 from HTMLParser import HTMLParser
 
 import webapp2
@@ -63,8 +64,8 @@ def _fetch_case_status(casenumber):
     response = urllib2.urlopen(req)
     the_page = response.read()
 
-    r = re.match(r".*Your Current Status:</strong>\s*(?P<prog>[^<]+?)\s*<span.*", the_page, re.DOTALL).groupdict()
-    return htmlparser.unescape(r.get("prog")).strip() if r else None
+    r = re.match(r".*Your Current Status:</strong>\s*(?P<prog>[^<]+?)\s*<span.*", the_page, re.DOTALL)
+    return htmlparser.unescape(r.groupdict().get("prog")).strip() if (r and r.groupdict()) else None
 
 
 def verify_cnumber(cnumber):
@@ -114,8 +115,10 @@ def send_status_update_email(recipient, cnumber, prevstatus, currstatus, email2)
                prevstatus,
                currstatus,)
     message.send()
+    logging.info("send status update to email: %s, %s" % (message.to, message.body))
 
 def send_adj_status_update_email(recipient, cnumber, changelist, email2):
+
     message = mail.EmailMessage(sender="case monitoring <support@case-monitoring.appspotmail.com>",
                                 subject="Some adjacent cases status changed (your case: %s)." % cnumber)
 
@@ -138,3 +141,4 @@ def send_adj_status_update_email(recipient, cnumber, changelist, email2):
                "\n".join(["%s, %s -> %s"%(cn, prevs, currs) for cn, prevs, currs in changelist])
                )
     message.send()
+    logging.info("send adj status update to email: %s, %s" % (message.to, message.body))

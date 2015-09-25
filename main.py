@@ -46,7 +46,7 @@ class Case(ndb.Model):
 
     @staticmethod
     def is_finished(status):
-        return status.endswith("Case Was Approved")
+        return status.endswith("Case Was Approved") if status else False
 
 
     def update_status(self, newstatus, adjstatus, updatelastcheck=True):
