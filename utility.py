@@ -30,6 +30,7 @@ def fetch_case_status(casenumber, adjacent=0):
     status, adjacentstatus = _fetch_case_status(casenumber), None
     if adjacent:
         adjacentstatus = [{'casenumber': adjcn, "status":_fetch_case_status(adjcn)} for adjcn in _get_adjacent_casenumbers(casenumber, adjacent)]
+    logging.debug("case: %s, status: %s, adjstatus: %s" % (casenumber, status, json.dumps(adjacentstatus, indent=2)))
     return status, adjacentstatus
 
 
@@ -56,7 +57,7 @@ def _fetch_case_status(casenumber):
     req = urllib2.Request(url="https://egov.uscis.gov/casestatus/mycasestatus.do",
                           data=urllib.urlencode(data),
                           headers={"Content-type": "application/x-www-form-urlencoded",
-                                   "Refer": "https://egov.uscis.gov/cris/Dashboard/CaseStatus.do",
+                                   "Refer": "https://egov.uscis.gov/casestatus/landing.do","Origin":"https://egov.uscis.gov","Upgrade-Insecure-Requests":"1",
                                    "Accept": """text/html,
                                    application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8""",
                                    "User-Agent": """Mozilla/5.0 (Windows NT 6.1; WOW64)

@@ -62,7 +62,7 @@ class Case(ndb.Model):
             for k in prevdict.keys():
                 prevs = prevdict[k]
                 currs = currdict.get(k, '')
-                if prevs != currs:
+                if prevs and currs and prevs != currs:
                     adjchanged.append((k, prevs, currs))
 
         self.adjcasestatus = json.dumps(adjstatus)  # always update adjacent case status
