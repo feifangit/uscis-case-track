@@ -27,7 +27,7 @@ class JSONRequestHandler(webapp2.RequestHandler):
 
 
 def fetch_case_status(casenumber, adjacent=0):
-    status, adjacentstatus = _fetch_case_status(casenumber), None
+    status, adjacentstatus = _fetch_case_status(casenumber), []
     if adjacent:
         adjacentstatus = [{'casenumber': adjcn, "status":_fetch_case_status(adjcn)} for adjcn in _get_adjacent_casenumbers(casenumber, adjacent)]
     logging.debug("case: %s, status: %s, adjstatus: %s" % (casenumber, status, json.dumps(adjacentstatus, indent=2)))
@@ -54,19 +54,24 @@ def _fetch_case_status(casenumber):
         'caseStatusSearchBtn':'CHECK STATUS'
     }
 
-    req = urllib2.Request(url="https://egov.uscis.gov/casestatus/mycasestatus.do",
-                          data=urllib.urlencode(data),
-                          headers={"Content-type": "application/x-www-form-urlencoded",
-                                   "Refer": "https://egov.uscis.gov/casestatus/landing.do","Origin":"https://egov.uscis.gov","Upgrade-Insecure-Requests":"1",
-                                   "Accept": """text/html,
-                                   application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8""",
-                                   "User-Agent": """Mozilla/5.0 (Windows NT 6.1; WOW64)
-                                   AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36"""})
-    response = urllib2.urlopen(req)
-    the_page = response.read()
+    try:
+        req = urllib2.Request(url="https://egov.uscis.gov/casestatus/mycasestatus.do",
+                            data=urllib.urlencode(data),
+                            headers={"Content-type": "application/x-www-form-urlencoded",
+                                    "Refer": "https://egov.uscis.gov/casestatus/landing.do","Origin":"https://egov.uscis.gov","Upgrade-Insecure-Requests":"1",
+                                    "Accept": """text/html,
+                                    application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8""",
+                                    "User-Agent": """Mozilla/5.0 (Windows NT 6.1; WOW64)
+                                    AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.1916.114 Safari/537.36"""})
+        response = urllib2.urlopen(req)
+        the_page = response.read()
+        r = re.match(r".*Your Current Status:</strong>\s*(?P<prog>[^<]+?)\s*<span.*", the_page, re.DOTALL)
+        return htmlparser.unescape(r.groupdict().get("prog")).strip() if (r and r.groupdict()) else None
+    except:
+        pass
+    return None
 
-    r = re.match(r".*Your Current Status:</strong>\s*(?P<prog>[^<]+?)\s*<span.*", the_page, re.DOTALL)
-    return htmlparser.unescape(r.groupdict().get("prog")).strip() if (r and r.groupdict()) else None
+    
 
 
 def verify_cnumber(cnumber):
