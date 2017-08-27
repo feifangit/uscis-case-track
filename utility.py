@@ -76,7 +76,7 @@ def _fetch_case_status(casenumber):
 
 def verify_cnumber(cnumber):
     if ((len(cnumber) == 13) and
-            (cnumber[:3] in ["EAC", "WAC", "LIN", "SRC"])):
+            (cnumber[:3] in ["EAC", "WAC", "LIN", "SRC", "IOE"])):
         return True
     return False
 
